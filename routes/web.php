@@ -28,6 +28,7 @@ use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -35,6 +36,16 @@ use Illuminate\Support\Facades\File;
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage linked successfully.';
+});
+
+// Health check route
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'laravel' => app()->version(),
+        'php' => phpversion()
+    ]);
 });
 
 // Debug route
@@ -65,18 +76,41 @@ Route::get('/debug', function () {
 // })->where('any', '.*');
 
 
+// Serve the React frontend
 Route::get('/', function () {
-    return File::get(public_path('react/index.html'));
+    try {
+        $path = public_path('react/index.html');
+        if (File::exists($path)) {
+            return File::get($path);
+        }
+        return response()->json(['error' => 'React build not found'], 404);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
 });
 
-// Add a route to serve React assets
+// Add routes to serve React assets
 Route::get('/assets/{file}', function ($file) {
     $path = public_path('react/assets/' . $file);
     if (File::exists($path)) {
-        return response()->file($path);
+        $mimeType = File::mimeType($path);
+        return response()->file($path, ['Content-Type' => $mimeType]);
     }
     abort(404);
 });
+
+// Add a catch-all route for React's client-side routing
+Route::get('/{any}', function () {
+    try {
+        $path = public_path('react/index.html');
+        if (File::exists($path)) {
+            return File::get($path);
+        }
+        return response()->json(['error' => 'React build not found'], 404);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+})->where('any', '^(?!api|assets|storage|debug|debug-detailed|storage-link|login|register|password|home|guru|siswa|admin|guest|about|prestasi-akademik|prestasi-non-akademik|fasilitas|alumni|message|quiz).*$');
 // Route::get('/homepage', function () {
 //     return view('pages.homepage');
 // });
@@ -168,7 +202,7 @@ Route::get('/guest/tentang', [GuestController::class, 'tentang'])->name('pages.g
 Route::get('/guest/galeri', [GuestController::class, 'galeri'])->name('pages.guest.galeri.index');
 Route::get('/guest/fasilitas', [GuestController::class, 'fasilitas'])->name('pages.guest.fasilitas.index');
 Route::get('/guest/contact', [GuestController::class, 'contact'])->name('pages.guest.contact.index');
-Route::get('/guest/alumni', [GuestController::class, 'alumni '])->name('pages.guest.alumni.index');
+Route::get('/guest/alumni', [GuestController::class, 'alumni'])->name('pages.guest.alumni.index');
 
 
 Route::resource('hero', HeroController::class);
@@ -205,19 +239,11 @@ Route::get('/guest/prestasi/create/prestasi/non-akademik', function () {
 Route::post('/home/storeHero', [HeroController::class, 'store'])->name('home.storeHero');
 // Route::post('/home/store', action: [NewsController::class, 'store'])->name('home.store');
 
-Route::get('/about', [AboutController::class, 'index']);
-Route::post('/about', [AboutController::class, 'store']);
-
-Route::get('/fasilitas/create', [FasilitasController::class, 'create'])->name('fasilitas.create');
-
-
 Route::get('/about', [AboutController::class, 'index'])->name('about.index');
 Route::get('/about/create', [AboutController::class, 'create'])->name('about.create');
 Route::post('/about', [AboutController::class, 'store'])->name('about.store');
 Route::get('/about/{id}/edit', [AboutController::class, 'edit'])->name('about.edit');
 Route::put('/about/{id}', [AboutController::class, 'update'])->name('about.update');
-
-// Proses hapus
 Route::delete('/about/{id}', [AboutController::class, 'destroy'])->name('about.destroy');
 
 
@@ -244,11 +270,7 @@ Route::delete('/prestasi-akademik/{id}', [PrestasiAkademikController::class, 'de
 Route::resource('prestasi-non-akademik', PrestasiNonAkademikController::class);
 // Route::get('/guest/prestasi/non-akademik', action: [PrestasiNonAkademikController::class, 'index'])->name('prestasi-non-akademik.index');
 
-Route::get('/fasilitas/create', [FasilitasController::class, 'create'])->name('fasilitas.create');
 Route::resource('fasilitas', FasilitasController::class);
-Route::delete('/fasilitas/{id}', [FasilitasController::class, 'destroy'])->name('fasilitas.destroy');
-Route::get('/fasilitas/{id}/edit', [FasilitasController::class, 'edit'])->name('fasilitas.edit');
-Route::put('/fasilitas/{id}', [FasilitasController::class, 'update'])->name('fasilitas.update');
 
 
 Route::get('/alumni', [AlumniController::class, 'index'])->name('pages.guest.alumni.index');
@@ -262,35 +284,22 @@ Route::get('/{role}/dashboard', [MessageController::class, 'index'])->name('dash
 Route::post('/message/send', [MessageController::class, 'store'])->name('message.send');
 
 
-// Route::middleware(['auth', 'checkRole:siswa'])->get('/siswa/quiz', [QuizController::class, 'siswa'])->name('siswa.quiz');
-
 Route::post('/quiz/store', [QuizController::class, 'store'])->name('quiz.store');
 Route::get('/guru/kuis', [QuizController::class, 'index'])->name('pages.guru.kuis.index');
-
-Route::get('/siswa', [QuizController::class, 'index'])->name('pages.siswa.kuis.index');
-
 Route::get('/siswa/quiz', [QuizController::class, 'siswa'])->name('siswa.quiz');
-Route::post('/quiz/store', [QuizController::class, 'store'])->name('quiz.store');
-Route::get('/guru/kuis', [QuizController::class, 'index'])->name('pages.guru.kuis.index');
 Route::get('/quiz/{id}/edit', [QuizController::class, 'edit'])->name('quiz.edit');
 Route::put('/quiz/{id}', [QuizController::class, 'update'])->name('quiz.update');
 Route::delete('/quiz/{id}', [QuizController::class, 'destroy'])->name('quiz.destroy');
-
-
 Route::get('/guru/kuis/{quizId}/hasil', [QuizController::class, 'hasil'])->name('quiz.hasil');
 
 
 Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function () {
-    // Existing routes...
-
     // Student (Siswa) routes
-    Route::get('/siswa', 'App\Http\Controllers\SiswaController@index')->name('siswa.index');
-    Route::get('/siswa/create', 'App\Http\Controllers\SiswaController@create')->name('siswa.create');
-    Route::post('/siswa', 'App\Http\Controllers\SiswaController@store')->name('siswa.store');
-    Route::get('/siswa/{siswa}', 'App\Http\Controllers\SiswaController@show')->name('siswa.show');
-    Route::get('/siswa/{siswa}/edit', 'App\Http\Controllers\SiswaController@edit')->name('siswa.edit');
-    Route::put('/siswa/{siswa}', 'App\Http\Controllers\SiswaController@update')->name('siswa.update');
-    Route::delete('/siswa/{siswa}', 'App\Http\Controllers\SiswaController@destroy')->name('siswa.destroy');
-
-    
+    Route::get('/siswa', [SiswaController::class, 'index'])->name('admin.siswa.index');
+    Route::get('/siswa/create', [SiswaController::class, 'create'])->name('admin.siswa.create');
+    Route::post('/siswa', [SiswaController::class, 'store'])->name('admin.siswa.store');
+    Route::get('/siswa/{siswa}', [SiswaController::class, 'show'])->name('admin.siswa.show');
+    Route::get('/siswa/{siswa}/edit', [SiswaController::class, 'edit'])->name('admin.siswa.edit');
+    Route::put('/siswa/{siswa}', [SiswaController::class, 'update'])->name('admin.siswa.update');
+    Route::delete('/siswa/{siswa}', [SiswaController::class, 'destroy'])->name('admin.siswa.destroy');
 });
