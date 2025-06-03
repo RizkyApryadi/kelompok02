@@ -18,17 +18,23 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
+# Copy composer files first for better layer caching
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install --no-scripts --no-autoloader --no-dev
+
 # Copy existing application
 COPY . /var/www
+
+# Generate optimized autoloader
+RUN composer dump-autoload --optimize
 
 # Create .env file from example
 RUN if [ -f .env.example ]; then cp .env.example .env; fi
 
 # Generate application key
 RUN php artisan key:generate --force
-
-# Install dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
