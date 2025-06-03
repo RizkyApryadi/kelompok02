@@ -93,41 +93,16 @@ Route::get('/debug-react', function () {
 // })->where('any', '.*');
 
 
-// Serve the React frontend
+// API and Laravel routes only - React will be served separately
 Route::get('/', function () {
-    try {
-        $path = public_path('react/index.html');
-        if (File::exists($path)) {
-            return File::get($path);
-        }
-        return response()->json(['error' => 'React build not found'], 404);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
+    return response()->json([
+        'message' => 'Laravel API is running',
+        'status' => 'success',
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173')
+    ]);
 });
 
-// Add routes to serve React assets
-Route::get('/assets/{file}', function ($file) {
-    $path = public_path('react/assets/' . $file);
-    if (File::exists($path)) {
-        $mimeType = File::mimeType($path);
-        return response()->file($path, ['Content-Type' => $mimeType]);
-    }
-    abort(404);
-});
-
-// Add a catch-all route for React's client-side routing
-Route::get('/{any}', function () {
-    try {
-        $path = public_path('react/index.html');
-        if (File::exists($path)) {
-            return File::get($path);
-        }
-        return response()->json(['error' => 'React build not found'], 404);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-})->where('any', '^(?!api|assets|storage|debug|debug-detailed|storage-link|login|register|password|home|guru|siswa|admin|guest|about|prestasi-akademik|prestasi-non-akademik|fasilitas|alumni|message|quiz).*$');
+// React routes removed - served separately
 // Route::get('/homepage', function () {
 //     return view('pages.homepage');
 // });

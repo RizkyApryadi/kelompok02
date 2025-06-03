@@ -10,12 +10,13 @@ services:
     working_dir: /var/www    
     volumes:
       - .:/var/www
-      - /var/www/vendor
-    environment:
+      - /var/www/vendor    environment:
       - DB_HOST=db
       - DB_DATABASE=laravel
       - DB_USERNAME=laravel
       - DB_PASSWORD=secret
+      - APP_URL=http://localhost:8000
+      - FRONTEND_URL=http://localhost:5173
     depends_on:
       - db
     ports:

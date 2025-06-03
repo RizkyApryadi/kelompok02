@@ -15,10 +15,21 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js'
       }
     }
-  },
-  server: {
+  },  server: {
     host: true,
-    port: 5173
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
   preview: {
     host: true,

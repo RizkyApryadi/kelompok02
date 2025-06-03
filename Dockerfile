@@ -1,15 +1,4 @@
-# Multi-stage build
-# Stage 1: Build React app
-FROM node:20-alpine AS react-builder
-
-WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm install
-
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: PHP Laravel app
+# PHP Laravel app only (no React build)
 FROM php:8.2-fpm
 
 # Install system dependencies including Node.js
@@ -32,16 +21,11 @@ WORKDIR /var/www
 # Copy Laravel files
 COPY . /var/www
 
-# Copy React build from previous stage
-COPY --from=react-builder /app/dist /var/www/public/react
+# Exclude frontend directory to avoid conflicts
+RUN rm -rf /var/www/frontend
 
-# Generate .env file from example
-RUN cp .env.example .env
-
-# Update .env file
-RUN sed -i 's/DB_HOST=127.0.0.1/DB_HOST=db/g' .env && \
-    sed -i 's/DB_USERNAME=root/DB_USERNAME=laravel/g' .env && \
-    sed -i 's/DB_PASSWORD=/DB_PASSWORD=secret/g' .env
+# Copy Docker-specific .env file
+COPY .env.docker .env
 
 # Install dependencies and optimize
 RUN composer install --no-interaction --optimize-autoloader
