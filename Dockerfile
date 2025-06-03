@@ -36,7 +36,7 @@ RUN composer install --no-interaction --optimize-autoloader
 RUN php artisan key:generate --force
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public
 
 # Expose port and start server
 EXPOSE 8000

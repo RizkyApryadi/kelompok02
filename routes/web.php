@@ -1,6 +1,6 @@
 <?php
 
-// use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JadwalController;
@@ -31,11 +31,32 @@ use Illuminate\Support\Facades\File;
 
 
 
-// // ------------------------ storage-Link ------------------------ //
-// Route::get('/storage-link', function () {
-//     Artisan::call('storage:link');
-//     return 'Storage linked successfully.';
-// });
+// ------------------------ storage-Link ------------------------ //
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    return 'Storage linked successfully.';
+});
+
+// Debug route
+Route::get('/debug', function () {
+    try {
+        $reactPath = public_path('react/index.html');
+        $exists = File::exists($reactPath);
+        
+        return [
+            'status' => 'ok',
+            'react_file_exists' => $exists,
+            'react_path' => $reactPath,
+            'laravel_version' => app()->version(),
+            'php_version' => phpversion(),
+        ];
+    } catch (\Exception $e) {
+        return [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ];
+    }
+});
 
 
 
@@ -46,6 +67,15 @@ use Illuminate\Support\Facades\File;
 
 Route::get('/', function () {
     return File::get(public_path('react/index.html'));
+});
+
+// Add a route to serve React assets
+Route::get('/assets/{file}', function ($file) {
+    $path = public_path('react/assets/' . $file);
+    if (File::exists($path)) {
+        return response()->file($path);
+    }
+    abort(404);
 });
 // Route::get('/homepage', function () {
 //     return view('pages.homepage');
