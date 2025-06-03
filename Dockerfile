@@ -21,6 +21,12 @@ WORKDIR /var/www
 # Copy existing application
 COPY . /var/www
 
+# Create .env file from example
+RUN if [ -f .env.example ]; then cp .env.example .env; fi
+
+# Generate application key
+RUN php artisan key:generate --force
+
 # Install dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
@@ -29,4 +35,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
-CMD ["php-fpm"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
