@@ -17,8 +17,8 @@ COPY . .
 # Build the app
 RUN npm run build
 
-# Expose port 4173 (Vite preview port)
-EXPOSE 4173
+# Expose port 5173 (Vite default)
+EXPOSE 5173
 
 # Start the app
 CMD ["npm", "run", "preview", "--", "--host"]
