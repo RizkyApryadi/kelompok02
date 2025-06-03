@@ -59,6 +59,33 @@ Route::get('/debug', function () {
     }
 });
 
+// Enhanced debug route for React files
+Route::get('/debug-react', function () {
+    try {
+        $reactIndexPath = public_path('react/index.html');
+        $reactAssetsPath = public_path('react/assets');
+        
+        $assetsFiles = [];
+        if (is_dir($reactAssetsPath)) {
+            $assetsFiles = array_diff(scandir($reactAssetsPath), ['.', '..']);
+        }
+        
+        return response()->json([
+            'status' => 'ok',
+            'react_index_exists' => File::exists($reactIndexPath),
+            'react_assets_dir_exists' => is_dir($reactAssetsPath),
+            'assets_files' => $assetsFiles,
+            'react_index_path' => $reactIndexPath,
+            'react_assets_path' => $reactAssetsPath,
+            'public_path' => public_path(),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
 
 
 // Route::get('{any}', function () {

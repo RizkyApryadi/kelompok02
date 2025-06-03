@@ -2,3 +2,14 @@ vendor
 node_modules
 .env
 storage/*.key
+npm-debug.log
+.git
+.gitignore
+README.md
+.nyc_output
+coverage
+.DS_Store
+*.log
+frontend/node_modules
+frontend/dist
+public/react

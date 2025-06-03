@@ -1,7 +1,18 @@
-# Use official PHP image with extensions
+# Multi-stage build
+# Stage 1: Build React app
+FROM node:20-alpine AS react-builder
+
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: PHP Laravel app
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Install system dependencies including Node.js
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -18,8 +29,11 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy all files
+# Copy Laravel files
 COPY . /var/www
+
+# Copy React build from previous stage
+COPY --from=react-builder /app/dist /var/www/public/react
 
 # Generate .env file from example
 RUN cp .env.example .env
