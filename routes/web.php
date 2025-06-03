@@ -38,16 +38,6 @@ Route::get('/storage-link', function () {
     return 'Storage linked successfully.';
 });
 
-// Health check route
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'timestamp' => now()->toISOString(),
-        'laravel' => app()->version(),
-        'php' => phpversion()
-    ]);
-});
-
 // Debug route
 Route::get('/debug', function () {
     try {

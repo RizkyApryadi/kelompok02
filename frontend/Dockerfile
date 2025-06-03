@@ -14,11 +14,8 @@ RUN npm install
 # Copy frontend source
 COPY . .
 
-# Build the app
+# Build the app for production
 RUN npm run build
 
-# Expose port 5173 (Vite default)
-EXPOSE 5173
-
-# Start the app
-CMD ["npm", "run", "preview", "--", "--host", "--port", "5173"]
+# The build output will be in /app/dist
+# This will be mounted to /public/react in the backend container

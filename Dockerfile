@@ -21,9 +21,6 @@ WORKDIR /var/www
 # Copy all files
 COPY . /var/www
 
-# Make sure React build exists in public directory
-COPY public/react /var/www/public/react
-
 # Generate .env file from example
 RUN cp .env.example .env
 
