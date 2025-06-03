@@ -65,18 +65,25 @@ Route::get('/debug', function () {
 // })->where('any', '.*');
 
 
+// Serve the React frontend
 Route::get('/', function () {
     return File::get(public_path('react/index.html'));
 });
 
-// Add a route to serve React assets
+// Add routes to serve React assets
 Route::get('/assets/{file}', function ($file) {
     $path = public_path('react/assets/' . $file);
     if (File::exists($path)) {
-        return response()->file($path);
+        $mimeType = File::mimeType($path);
+        return response()->file($path, ['Content-Type' => $mimeType]);
     }
     abort(404);
 });
+
+// Add a catch-all route for React's client-side routing
+Route::get('/{any}', function () {
+    return File::get(public_path('react/index.html'));
+})->where('any', '^(?!api|assets).*$');
 // Route::get('/homepage', function () {
 //     return view('pages.homepage');
 // });
