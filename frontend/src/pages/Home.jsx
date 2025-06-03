@@ -1,6 +1,6 @@
 import Hero from "./homepage/Hero";
 import PrincipalMessage from "./homepage/PrincipalMessage";
-import NewsCard from "./homepage/News";
+import NewsCard from "./homepage/news";
 import Aktifitas from "./homepage/Aktifitas";
 import Testimonials from "./homepage/Testimonials";
 import Message from "./homepage/Message";
