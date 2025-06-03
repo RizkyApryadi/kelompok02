@@ -1,5 +1,5 @@
 import Welcome from "./about/welcome";
-import AboutContent from "./about/about";
+import AboutContent from "./about/About";
 
 const About = () => {
   return (

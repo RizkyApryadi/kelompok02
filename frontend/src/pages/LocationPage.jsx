@@ -1,10 +1,10 @@
-import LocationPage from "./lokasi/lokasiTempat";
-const About = () => {
+import LokasiTempat from "./lokasi/lokasiTempat";
+const LocationPageComponent = () => {
   return (
     <div className="font-sans">
-        <LocationPage />
+        <LokasiTempat />
     </div>
   );
 };
 
-export default About;
+export default LocationPageComponent;
