@@ -6,20 +6,19 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package.json .
-COPY frontend/package.json frontend/
-COPY frontend/package-lock.json frontend/
+COPY package-lock.json ./
 
 # Install dependencies
-RUN cd frontend && npm install
+RUN npm install
 
 # Copy frontend source
-COPY frontend /app/frontend
+COPY . /app/frontend
 
 # Build the app
-RUN cd frontend && npm run build
+RUN npm run build
 
 # Expose port 5173 (Vite default)
 EXPOSE 5173
 
 # Start the app
-CMD ["npm", "run", "preview", "--prefix", "frontend", "--", "--host"]
+CMD ["npm", "run", "preview", "--", "--host"]
